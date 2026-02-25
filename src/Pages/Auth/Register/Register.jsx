@@ -5,12 +5,10 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema } from "../../../schema/registerSchema";
 import { sendRegisterData } from "../../../services/registerService";
-import { success } from "zod";
 import { Alert } from "@heroui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-
+import { Link } from "react-router-dom";
 
 
 export default function Register() {
@@ -20,7 +18,7 @@ export default function Register() {
   let [isLoading, setLoading] = useState(false);
   let navigate = useNavigate ();
 
-  const { register, control, handleSubmit, formState: { errors } } = useForm({
+  const { register, control, handleSubmit, formState: { errors , isSubmitting} } = useForm({
 
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -34,25 +32,26 @@ export default function Register() {
     mode: "onBlur"
   });
 
+ 
 
-
-  async function onSubmitForm(data) {
+async function onSubmitForm(data) {
     setLoading(false)
     setError(false)
-   // console.log("submitted data" ,data);
+    console.log("submitted data" ,data);
     try {
       let response = await sendRegisterData(data)
       setLoading(true)
-     navigate('/auth/login')
+setTimeout(() =>{
+       navigate('/auth/login')
+
+}, 1500)
     } catch(err) {
       setError(true)
-          console.log (response)
+        //  console.log (response)
 
     }
- 
+
   }
-
-
   return (
     <>
     
@@ -60,8 +59,9 @@ export default function Register() {
         <div className="max-w-100 md:max-w-1/2 lg:max-w-1/2 mx-auto ">
           <h1 className="text-4xl font-bold text-center text-sky-700">Register</h1>
           <form onSubmit={handleSubmit(onSubmitForm)} className=" bg-white shadow-2xl mt-3 p-12 rotate-sm flex flex-col gap-4 rounded-2xl">
-                {isError ? <Alert color='danger' title= 'Enter avlid data' /> : null }
-            {isLoading ? <Alert color= 'success' title='Success' /> : null }
+            
+          {isError && <Alert color="danger">Enter a valid data</Alert>}
+          {isLoading && <Alert color="success">Success</Alert>}
             <Input  {...register('name')} label="Name" placeholder="Enter your Name" type="text" variant='bordered' color="secondary" />
             {errors.name && (<p className="text-red-500">{errors.name.message}</p>)}
             <Input  {...register('email')} label="Email" placeholder="Enter your email" type="email" variant='bordered' color="secondary" />
@@ -88,9 +88,10 @@ export default function Register() {
               } />
 
             {errors.gender && (<p className="text-red-500">{errors.gender.message}</p>)}
-            <Button type="submit" color="secondary" variant="shadow" >
+            <Button isLoading={isSubmitting} type="submit" color="secondary" variant="shadow" >
               Register
             </Button>
+             <Link to={'/auth/login'} className=" text-2xl text-sky-700 text-center">Already have account ? Login Now</Link>
           </form>
         </div>
       </section>
